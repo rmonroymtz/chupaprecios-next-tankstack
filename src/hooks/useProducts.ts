@@ -2,7 +2,38 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { restRequest } from "@/services/rest-client";
-import type { ProductFilters, ProductsResponse } from "@/services/types";
+import type {
+  Product,
+  ProductFilters,
+  ProductSearchRequest,
+  ProductSearchResponse,
+  ProductsResponse,
+  RawProduct,
+} from "@/services/types";
+
+const DEFAULT_STORE = "amazon";
+const DEFAULT_ENGINE_ID = "direct";
+const DEFAULT_PAGE_SIZE = 16;
+const DEFAULT_CURRENCY = "MXN";
+
+/**
+ * Translates a raw product from the search service into the clean domain
+ * {@link Product} model used across the UI.
+ *
+ * Keeps the wire format (snake_case, optional fields, alternate keys) from
+ * leaking into components.
+ */
+function mapRawProduct(raw: RawProduct, index: number): Product {
+  return {
+    id: raw.asin ?? String(index),
+    sku: raw.asin ?? "",
+    name: raw.title ?? "",
+    price: raw.price?.current_price ?? 0,
+    currency: raw.price?.currency ?? DEFAULT_CURRENCY,
+    imageUrl: raw.image?.src ?? null,
+    description: raw.brand || null,
+  };
+}
 
 /**
  * Builds the React Query key for a products listing, scoped by filters so
@@ -21,16 +52,26 @@ export function productsQueryKey(filters: ProductFilters = {}) {
 export async function fetchProducts(
   filters: ProductFilters,
 ): Promise<ProductsResponse> {
-  return restRequest<ProductsResponse>("/products", {
-    searchParams: {
-      search: filters.search,
-      category: filters.category,
-      minPrice: filters.minPrice,
-      maxPrice: filters.maxPrice,
-      page: filters.page,
-      pageSize: filters.pageSize,
-    },
+  const body: ProductSearchRequest = {
+    filters: "",
+    query: "playeras",
+    store: filters.store ?? DEFAULT_STORE,
+    engine_id: filters.engineId ?? DEFAULT_ENGINE_ID,
+    page: filters.page ?? 1,
+    page_size: filters.pageSize ?? DEFAULT_PAGE_SIZE,
+  };
+
+  const raw = await restRequest<ProductSearchResponse>("/api/v1/search/", {
+    method: "POST",
+    body,
   });
+
+  return {
+    items: raw.data.products.map(mapRawProduct),
+    total: raw.data.totalProducts,
+    page: raw.data.pagination.current,
+    pageSize: body.page_size,
+  };
 }
 
 /**
