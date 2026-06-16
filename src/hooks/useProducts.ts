@@ -54,7 +54,7 @@ export async function fetchProducts(
 ): Promise<ProductsResponse> {
   const body: ProductSearchRequest = {
     filters: "",
-    query: "playeras",
+    query: filters.search ?? "",
     store: filters.store ?? DEFAULT_STORE,
     engine_id: filters.engineId ?? DEFAULT_ENGINE_ID,
     page: filters.page ?? 1,
