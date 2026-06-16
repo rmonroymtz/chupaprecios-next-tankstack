@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { productsQueryKey } from "@/lib/products-query-key";
@@ -89,6 +90,77 @@ function LoadingSkeleton() {
   );
 }
 
+/**
+ * Builds a `/search.html` URL for a given page, preserving the active query and
+ * store. Targets the public `.html` contract (rewritten to `/search`) so every
+ * paginated view stays a real, shareable, server-resolved URL — pagination is
+ * URL-driven, never client-only state.
+ */
+function buildPageHref(filters: SearchFilters, page: number): string {
+  const params = new URLSearchParams({
+    query: filters.search,
+    store: filters.store,
+    page: String(page),
+  });
+  return `/search.html?${params.toString()}`;
+}
+
+function Pagination({
+  filters,
+  totalPages,
+}: {
+  filters: SearchFilters;
+  totalPages: number;
+}) {
+  const { page } = filters;
+  const hasPrev = page > 1;
+  const hasNext = page < totalPages;
+
+  const linkClass =
+    "rounded-md border border-black/[.08] px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-100 dark:border-white/[.145] dark:hover:bg-zinc-800";
+  const disabledClass =
+    "rounded-md border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-400 dark:border-white/[.145] dark:text-zinc-600";
+
+  return (
+    <nav
+      aria-label="Search results pagination"
+      className="flex items-center justify-between gap-4"
+    >
+      {hasPrev ? (
+        <Link
+          href={buildPageHref(filters, page - 1)}
+          rel="prev"
+          className={linkClass}
+        >
+          ← Previous
+        </Link>
+      ) : (
+        <span className={disabledClass} aria-disabled="true">
+          ← Previous
+        </span>
+      )}
+
+      <span className="text-sm text-zinc-600 dark:text-zinc-400">
+        Page {page} of {totalPages}
+      </span>
+
+      {hasNext ? (
+        <Link
+          href={buildPageHref(filters, page + 1)}
+          rel="next"
+          className={linkClass}
+        >
+          Next →
+        </Link>
+      ) : (
+        <span className={disabledClass} aria-disabled="true">
+          Next →
+        </span>
+      )}
+    </nav>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
@@ -144,6 +216,8 @@ export function SearchResults({ filters }: SearchResultsProps) {
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
+
   return (
     <div className="flex w-full flex-col gap-4">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -154,6 +228,9 @@ export function SearchResults({ filters }: SearchResultsProps) {
           <ProductCard key={product.id} product={product} />
         ))}
       </ul>
+      {totalPages > 1 ? (
+        <Pagination filters={filters} totalPages={totalPages} />
+      ) : null}
     </div>
   );
 }
