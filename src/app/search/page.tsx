@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import { SearchResults } from "@/app/search/_components/search-results";
-import { productsQueryKey } from "@/hooks/useProducts";
+import { productsQueryKey } from "@/lib/products-query-key";
 import { buildSearchFilters } from "@/lib/search-filters";
 import { getQueryClient } from "@/lib/get-query-client";
 import { searchProducts, buildValidatedFilters, ValidationError } from "@/services/search-server";

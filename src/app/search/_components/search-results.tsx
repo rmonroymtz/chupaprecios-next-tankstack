@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { productsQueryKey } from "@/hooks/useProducts";
+import { productsQueryKey } from "@/lib/products-query-key";
 import type { SearchFilters } from "@/lib/search-filters";
 import type { Product, ProductsResponse } from "@/services/types";
 

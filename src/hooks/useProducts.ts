@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { restRequest } from "@/services/rest-client";
+import { productsQueryKey } from "@/lib/products-query-key";
 import type {
   Product,
   ProductFilters,
@@ -35,13 +36,11 @@ function mapRawProduct(raw: RawProduct, index: number): Product {
   };
 }
 
-/**
- * Builds the React Query key for a products listing, scoped by filters so
- * different filter combinations are cached independently.
- */
-export function productsQueryKey(filters: ProductFilters = {}) {
-  return ["products", filters] as const;
-}
+// `productsQueryKey` lives in `@/lib/products-query-key` (a client-safe module)
+// so client components can import it without pulling `rest-client` — and the
+// inlined external host — into the browser bundle. Re-exported here to preserve
+// the existing import path for server-side and hook callers.
+export { productsQueryKey };
 
 /**
  * Fetches the product catalog from the internal REST API.
