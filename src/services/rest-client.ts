@@ -2,7 +2,13 @@
  * Typed wrapper over native `fetch` for the internal REST catalog API.
  */
 
-const REST_API_BASE_URL = process.env.NEXT_PUBLIC_REST_API_URL ?? "";
+// REST_API_URL        — non-public, server-only. Used by the search proxy path.
+//                       Set this in .env.local (same value as NEXT_PUBLIC_REST_API_URL
+//                       during transition). Never prefix with NEXT_PUBLIC_.
+// NEXT_PUBLIC_REST_API_URL — kept for the home / path until it is migrated to a
+//                       server boundary. Will be removed in a follow-up change.
+const REST_API_BASE_URL =
+  process.env.REST_API_URL ?? process.env.NEXT_PUBLIC_REST_API_URL ?? "";
 
 /**
  * Error thrown when the internal REST API returns a non-2xx response, or
@@ -35,7 +41,8 @@ function buildUrl(
 ): string {
   if (!REST_API_BASE_URL) {
     throw new Error(
-      "NEXT_PUBLIC_REST_API_URL is not set. Configure it in your environment " +
+      "REST_API_URL is not set. Configure it in your environment " +
+        "(or NEXT_PUBLIC_REST_API_URL as a transitional fallback) " +
         "to point to the internal REST catalog API.",
     );
   }
