@@ -107,7 +107,7 @@ export function buildValidatedFilters(raw: {
     page = DEFAULT_PAGE;
   } else {
     const coerced = Number(rawPage);
-    if (!Number.isFinite(coerced) || isNaN(coerced)) {
+    if (!Number.isFinite(coerced)) {
       throw new ValidationError(
         "page",
         `Invalid page value "${rawPage}". Must be a positive integer.`,
